@@ -65,6 +65,24 @@ ds = store.get_ds_query(query)
 
 `download_slga_soils(query)` remains as a thin wrapper.
 
+## Performance
+
+Live measurements against TERN — a ~2 × 2 km AOI (one *chunk* =
+1200 × 1200 px ≈ 100 × 100 km at 90 m):
+
+| Scenario | Downloaded | Time |
+|---|---|---|
+| Cold fill — Clay/Sand/Silt at 5–15 cm | 3 chunks | 3.8 s |
+| Same request again | nothing | **0.0 s** |
+| AOI shifted ~2 km (inside cached chunks) | nothing | **0.0 s** |
+| New depth slice (0–5 cm), same attributes | 3 chunks — *the new layers only* | 3.6 s |
+| Read cached window (1200² × 3 layers) | — | 0.4 s |
+
+Store footprint: ~5 MB for six layer-chunks (~10 000 km² each of
+Clay/Sand/Silt at two depths). Absolute times vary with network and
+TERN load; the zeros are the point — they are ledger lookups, no
+network involved.
+
 ## Install
 
 All lab repos share one conda environment, **`borevitz_lab`** — each
