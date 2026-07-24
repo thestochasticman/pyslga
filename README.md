@@ -85,6 +85,14 @@ network involved.
 
 ## Install
 
+### Conda (recommended)
+
+```bash
+conda install -c conda-forge -c thestochasticman pyslga
+```
+
+### From source
+
 All lab repos share one conda environment, **`borevitz_lab`** — each
 repo's `environment.yml` creates it if missing and adds its own
 packages if it exists (never use `--prune`):

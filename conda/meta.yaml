@@ -1,0 +1,41 @@
+{% set version = "0.1.0" %}
+
+package:
+  name: pyslga
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python >=3.11
+    - pip
+    - setuptools >=61
+    - wheel
+  run:
+    - python >=3.11
+    - borevitz-lab
+    - attrs
+    - typing_extensions
+    - numpy
+    - rasterio
+    - xarray
+    - zarr
+    - requests
+
+test:
+  imports:
+    - pyslga
+    - pyslga.grid
+
+about:
+  home: https://github.com/thestochasticman/pyslga
+  license: MIT
+  license_file: LICENSE
+  summary: Cached SLGA soil-property windows for Australia (one download per chunk)
