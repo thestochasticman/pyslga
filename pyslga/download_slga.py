@@ -6,7 +6,7 @@ chunk-level dedup, windowed COG reads) lives in
 ``download_slga_soils(troi)`` entry point survives.
 """
 import xarray as xr
-from troi.troi import Troi
+from troi import Troi
 from pyslga.slga import SLGA, defaultslga
 from pyslga.store import DEFAULT_ATTRIBUTES, DEFAULT_DEPTHS
 
@@ -21,7 +21,7 @@ def download_slga_soils(troi: Troi, vars=DEFAULT_ATTRIBUTES,
     troi are ignored: soil properties are time-invariant.
 
     Args:
-        troi: The :class:`troi.troi.Troi` (bbox is what matters).
+        troi: The :class:`troi.Troi` (bbox is what matters).
         vars: SLGA attribute names (default Clay/Sand/Silt).
         depths: Standard depth slices (default ``'5-15cm'``).
         api_key: TERN API key; falls back to ``config.tern_api_key``.
@@ -41,11 +41,11 @@ def test_live_fetch_and_dedup():
     overlapping bboxes fetch nothing; values are plausible percentages."""
     import numpy as np
     import tempfile
-    from troi.config import Config
+    from troi import Config
     from pyslga.store import Store
 
     tmpdir = tempfile.mkdtemp(prefix='pyslga_live_test_')
-    from troi.config import config as global_config
+    from troi import config as global_config
     cfg = Config(out_dir=tmpdir, tmp_dir=tmpdir, tern_api_key=global_config.tern_api_key)
     store = Store(config=cfg)
     bbox = [148.36265, -33.52606, 148.38265, -33.50606]
@@ -68,7 +68,7 @@ def test_live_fetch_and_dedup():
 
 
 def test():
-    from troi.config import config
+    from troi import config
     if not config.tern_api_key:
         print('SKIPPED: set tern_api_key in ~/.config/Troi.json '
               '(or TROI_TERN_KEY) to run the live suite')

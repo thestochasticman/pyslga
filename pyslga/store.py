@@ -30,7 +30,7 @@ import numpy as np
 import xarray as xr
 import zarr
 
-from troi.config import Config, config as default_config
+from troi import Config, config as default_config
 from pyslga import grid
 from pyslga.paths import Paths
 from pyslga.slga import SLGA, defaultslga
@@ -66,7 +66,7 @@ class Store:
     """The machine-wide SLGA store: one grid per layer, one ledger, zero
     re-downloads.
 
-    Composed from :class:`troi.config.Config` (where the store
+    Composed from :class:`troi.Config` (where the store
     lives, and the TERN API key) and :class:`pyslga.slga.SLGA`
     (endpoint + attribute/depth catalogs). No inheritance.
 
@@ -219,7 +219,7 @@ class Store:
         what's missing first.
 
         Troi-agnostic — the data layer of the package. Pipelines that
-        speak :class:`troi.troi.Troi` use :meth:`get_ds_troi`.
+        speak :class:`troi.Troi` use :meth:`get_ds_troi`.
 
         Args:
             bbox: ``[west, south, east, north]`` in EPSG:4326.
@@ -259,13 +259,13 @@ class Store:
 
     def fill_troi(s, troi, attributes=DEFAULT_ATTRIBUTES,
                    depths=DEFAULT_DEPTHS, api_key: str = None) -> int:
-        """:meth:`fill` for a :class:`troi.troi.Troi` (dates
+        """:meth:`fill` for a :class:`troi.Troi` (dates
         ignored — soil properties are time-invariant)."""
         return s.fill(troi.bbox, attributes=attributes, depths=depths, api_key=api_key)
 
     def get_ds_troi(s, troi, attributes=DEFAULT_ATTRIBUTES,
                      depths=DEFAULT_DEPTHS, api_key: str = None) -> xr.Dataset:
-        """:meth:`get_ds` for a :class:`troi.troi.Troi`."""
+        """:meth:`get_ds` for a :class:`troi.Troi`."""
         return s.get_ds(troi.bbox, attributes=attributes, depths=depths, api_key=api_key)
 
 

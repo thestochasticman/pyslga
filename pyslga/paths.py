@@ -1,12 +1,12 @@
 """Derived on-disk locations of the machine-wide SLGA store.
 
-The store is keyed by :class:`troi.config.Config` (one store per
+The store is keyed by :class:`troi.Config` (one store per
 data root, shared by every request on this machine). Rule of thumb
 across the lab's packages: user-settable inputs → Config, derived
 locations → Paths. No inheritance — composition only.
 """
 from attrs import frozen, field
-from troi.config import Config, config as default_config
+from troi import Config, config as default_config
 
 
 @frozen
@@ -14,7 +14,7 @@ class Paths:
     """Where the pyslga store lives for a given Config.
 
     Attributes:
-        config: The :class:`troi.config.Config` supplying the data
+        config: The :class:`troi.Config` supplying the data
             root (and the TERN API key).
         root: Store directory (``{config.tmp_dir}/slga_store``).
         store: The sparse Zarr store — one array per attribute x depth layer.
