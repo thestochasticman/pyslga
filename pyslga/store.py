@@ -30,7 +30,7 @@ import numpy as np
 import xarray as xr
 import zarr
 
-from borevitz_lab.config import Config, config as default_config
+from troi.config import Config, config as default_config
 from pyslga import grid
 from pyslga.paths import Paths
 from pyslga.slga import SLGA, defaultslga
@@ -66,7 +66,7 @@ class Store:
     """The machine-wide SLGA store: one grid per layer, one ledger, zero
     re-downloads.
 
-    Composed from :class:`borevitz_lab.config.Config` (where the store
+    Composed from :class:`troi.config.Config` (where the store
     lives, and the TERN API key) and :class:`pyslga.slga.SLGA`
     (endpoint + attribute/depth catalogs). No inheritance.
 
@@ -100,7 +100,7 @@ class Store:
         api_key = api_key or s.config.tern_api_key
         if not api_key:
             raise ValueError(
-                'Set tern_api_key in ~/.config/BorevitzLab.json or pass api_key parameter'
+                'Set tern_api_key in ~/.config/Troi.json or pass api_key parameter'
             )
         return api_key
 
@@ -165,7 +165,7 @@ class Store:
         """Ensure every chunk of every requested layer covering ``bbox``
         is populated.
 
-        Query-agnostic (and, soils being time-invariant, date-free).
+        Troi-agnostic (and, soils being time-invariant, date-free).
         Returns the number of chunks actually downloaded — 0 means the
         request was already fully covered and no network was touched.
         """
@@ -218,8 +218,8 @@ class Store:
         """Return the soil-property window for ``bbox``, downloading only
         what's missing first.
 
-        Query-agnostic — the data layer of the package. Pipelines that
-        speak :class:`borevitz_lab.query.Query` use :meth:`get_ds_query`.
+        Troi-agnostic — the data layer of the package. Pipelines that
+        speak :class:`troi.troi.Troi` use :meth:`get_ds_troi`.
 
         Args:
             bbox: ``[west, south, east, north]`` in EPSG:4326.
@@ -255,18 +255,18 @@ class Store:
         finally:
             db.close()
 
-    # -- Query adapters (the reproducibility layer speaks Query) ----------
+    # -- Troi adapters (the reproducibility layer speaks Troi) ----------
 
-    def fill_query(s, query, attributes=DEFAULT_ATTRIBUTES,
+    def fill_troi(s, troi, attributes=DEFAULT_ATTRIBUTES,
                    depths=DEFAULT_DEPTHS, api_key: str = None) -> int:
-        """:meth:`fill` for a :class:`borevitz_lab.query.Query` (dates
+        """:meth:`fill` for a :class:`troi.troi.Troi` (dates
         ignored — soil properties are time-invariant)."""
-        return s.fill(query.bbox, attributes=attributes, depths=depths, api_key=api_key)
+        return s.fill(troi.bbox, attributes=attributes, depths=depths, api_key=api_key)
 
-    def get_ds_query(s, query, attributes=DEFAULT_ATTRIBUTES,
+    def get_ds_troi(s, troi, attributes=DEFAULT_ATTRIBUTES,
                      depths=DEFAULT_DEPTHS, api_key: str = None) -> xr.Dataset:
-        """:meth:`get_ds` for a :class:`borevitz_lab.query.Query`."""
-        return s.get_ds(query.bbox, attributes=attributes, depths=depths, api_key=api_key)
+        """:meth:`get_ds` for a :class:`troi.troi.Troi`."""
+        return s.get_ds(troi.bbox, attributes=attributes, depths=depths, api_key=api_key)
 
 
 # -- offline tests (synthetic layers, no network) ---------------------------

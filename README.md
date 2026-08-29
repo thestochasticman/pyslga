@@ -31,13 +31,13 @@ and new depth slices reuse everything already fetched. Part of the
   integer-aligned windowed read — no resampling, ever.
 - Soil properties are time-invariant: no time axis, no dates.
 - Pixel reads require a TERN API key (listings are public) — set
-  `tern_api_key` in `~/.config/BorevitzLab.json`,
-  `BOREVITZ_LAB_TERN_KEY`, or pass `api_key=` per call. Keys are free
+  `tern_api_key` in `~/.config/Troi.json`,
+  `TROI_TERN_KEY`, or pass `api_key=` per call. Keys are free
   from <https://account.tern.org.au/>.
 
 ## Usage
 
-The core API is **query-agnostic** — just a bbox:
+The core API is **troi-agnostic** — just a bbox:
 
 ```python
 from pyslga.store import Store
@@ -56,14 +56,14 @@ store.fill(bbox)          # → 0: already local
 16 attributes × 6 depths are available — see `pyslga.slga.SLGA` for
 the catalog.
 
-Pipelines that speak the shared `borevitz_lab.query.Query` use the
-adapters (dates on the query are ignored):
+Pipelines that speak the shared `troi.troi.Troi` use the
+adapters (dates on the troi are ignored):
 
 ```python
-ds = store.get_ds_query(query)
+ds = store.get_ds_troi(troi)
 ```
 
-`download_slga_soils(query)` remains as a thin wrapper.
+`download_slga_soils(troi)` remains as a thin wrapper.
 
 ## Performance
 
@@ -93,21 +93,21 @@ conda install -c conda-forge -c thestochasticman pyslga
 
 ### From source
 
-All lab repos share one conda environment, **`borevitz_lab`** — each
+All lab repos share one conda environment, **`troi`** — each
 repo's `environment.yml` creates it if missing and adds its own
 packages if it exists (never use `--prune`):
 
 ```bash
-conda env update -n borevitz_lab -f environment.yml
-conda activate borevitz_lab
-pip install -e ../borevitz_lab   # shared core (not yet on PyPI)
+conda env update -n troi -f environment.yml
+conda activate troi
+pip install -e ../troi   # shared core (not yet on PyPI)
 pip install -e .
 ```
 
 Package design (shared across the lab's packages — no inheritance,
 composition only):
 
-- **`Query`** (from `borevitz-lab`) — identity: what region.
+- **`Troi`** (from `troi`) — identity: what region.
 - **`SLGA`** (`pyslga.slga`) — config: endpoint, attribute/depth catalogs.
 - **`Paths`** (`pyslga.paths`) — derived locations of the store for a
   given `Config`.

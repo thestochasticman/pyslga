@@ -1,27 +1,27 @@
-"""Fetch SLGA soil-property windows for a query — via the machine-wide store.
+"""Fetch SLGA soil-property windows for a troi — via the machine-wide store.
 
 Thin compatibility wrapper: the heavy lifting (layer registration,
 chunk-level dedup, windowed COG reads) lives in
 :class:`pyslga.store.Store`. Kept as a module so the familiar
-``download_slga_soils(query)`` entry point survives.
+``download_slga_soils(troi)`` entry point survives.
 """
 import xarray as xr
-from borevitz_lab.query import Query
+from troi.troi import Troi
 from pyslga.slga import SLGA, defaultslga
 from pyslga.store import DEFAULT_ATTRIBUTES, DEFAULT_DEPTHS
 
 
-def download_slga_soils(query: Query, vars=DEFAULT_ATTRIBUTES,
+def download_slga_soils(troi: Troi, vars=DEFAULT_ATTRIBUTES,
                         depths=DEFAULT_DEPTHS, api_key: str = None,
                         slga: SLGA = defaultslga) -> xr.Dataset:
-    """Return SLGA soil properties for ``query.bbox``.
+    """Return SLGA soil properties for ``troi.bbox``.
 
     Fetches only the grid chunks no previous request has populated —
     repeat and overlapping queries re-download nothing. Dates on the
-    query are ignored: soil properties are time-invariant.
+    troi are ignored: soil properties are time-invariant.
 
     Args:
-        query: The :class:`borevitz_lab.query.Query` (bbox is what matters).
+        troi: The :class:`troi.troi.Troi` (bbox is what matters).
         vars: SLGA attribute names (default Clay/Sand/Silt).
         depths: Standard depth slices (default ``'5-15cm'``).
         api_key: TERN API key; falls back to ``config.tern_api_key``.
@@ -32,8 +32,8 @@ def download_slga_soils(query: Query, vars=DEFAULT_ATTRIBUTES,
         attribute x depth.
     """
     from pyslga.store import Store
-    store = Store(config=query.config, slga=slga)
-    return store.get_ds_query(query, attributes=vars, depths=depths, api_key=api_key)
+    store = Store(config=troi.config, slga=slga)
+    return store.get_ds_troi(troi, attributes=vars, depths=depths, api_key=api_key)
 
 
 def test_live_fetch_and_dedup():
@@ -41,11 +41,11 @@ def test_live_fetch_and_dedup():
     overlapping bboxes fetch nothing; values are plausible percentages."""
     import numpy as np
     import tempfile
-    from borevitz_lab.config import Config
+    from troi.config import Config
     from pyslga.store import Store
 
     tmpdir = tempfile.mkdtemp(prefix='pyslga_live_test_')
-    from borevitz_lab.config import config as global_config
+    from troi.config import config as global_config
     cfg = Config(out_dir=tmpdir, tmp_dir=tmpdir, tern_api_key=global_config.tern_api_key)
     store = Store(config=cfg)
     bbox = [148.36265, -33.52606, 148.38265, -33.50606]
@@ -68,10 +68,10 @@ def test_live_fetch_and_dedup():
 
 
 def test():
-    from borevitz_lab.config import config
+    from troi.config import config
     if not config.tern_api_key:
-        print('SKIPPED: set tern_api_key in ~/.config/BorevitzLab.json '
-              '(or BOREVITZ_LAB_TERN_KEY) to run the live suite')
+        print('SKIPPED: set tern_api_key in ~/.config/Troi.json '
+              '(or TROI_TERN_KEY) to run the live suite')
         return None
     return test_live_fetch_and_dedup()
 
