@@ -85,22 +85,20 @@ network involved.
 
 ## Install
 
-### Conda (recommended)
+### pip
 
 ```bash
-conda install -c conda-forge -c thestochasticman pyslga
+pip install git+https://github.com/thestochasticman/pyslga.git
 ```
+
+Dependencies (the `troi` core included, pulled from GitHub) are
+declared in `pyproject.toml` and installed automatically.
 
 ### From source
 
-All lab repos share one conda environment, **`troi`** — each
-repo's `environment.yml` creates it if missing and adds its own
-packages if it exists (never use `--prune`):
-
 ```bash
-conda env update -n troi -f environment.yml
-conda activate troi
-pip install -e ../troi   # shared core (not yet on PyPI)
+git clone https://github.com/thestochasticman/pyslga.git
+cd pyslga
 pip install -e .
 ```
 
