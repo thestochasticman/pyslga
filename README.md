@@ -8,7 +8,7 @@ AWC, …) at six standard depths, served as one COG per attribute × depth
 on the TERN datastore. Every pixel this machine ever downloads lands in
 one sparse, chunk-indexed store, so repeat requests, overlapping AOIs
 and new depth slices reuse everything already fetched. Part of the
-[Borevitz Lab](https://borevitzlab.anu.edu.au/) ecosystem.
+[Borevitz Lab](https://biology.anu.edu.au/research/research-groups/borevitz-group-plant-genomics-climate-adaption) ecosystem.
 
 ## How it works
 
