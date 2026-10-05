@@ -18,7 +18,9 @@ class Paths:
             root (and the TERN API key).
         root: Store directory (``{config.tmp_dir}/slga_store``).
         store: The sparse Zarr store — one array per attribute x depth layer.
-        index_db: SQLite ledger of layers and populated chunks.
+            A chunk file under ``slga.zarr/<key>/c/`` is the ledger entry.
+        layers: Marker tree of layer metadata (``layers/<key>.json``: COG url,
+            transform, shape, nodata), written at first contact.
 
     Example:
         ```python
@@ -32,11 +34,11 @@ class Paths:
 
     root: str = field(init=False)
     store: str = field(init=False)
-    index_db: str = field(init=False)
+    layers: str = field(init=False)
 
     root.default(lambda s: f'{s.config.tmp_dir}/slga_store')
     store.default(lambda s: f'{s.root}/slga.zarr')
-    index_db.default(lambda s: f'{s.root}/index.db')
+    layers.default(lambda s: f'{s.root}/layers')
 
 
 def test_paths_derive_from_config():
@@ -47,7 +49,7 @@ def test_paths_derive_from_config():
     return (
         paths.root == f'{tmpdir}/slga_store'
         and paths.store == f'{tmpdir}/slga_store/slga.zarr'
-        and paths.index_db == f'{tmpdir}/slga_store/index.db'
+        and paths.layers == f'{tmpdir}/slga_store/layers'
     )
 
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyslga"
-version = "0.1.0"
+version = "0.2.0+gadi"
 description = "Cached SLGA soil-property windows for Australia — download once per chunk, never twice"
 readme = "README.md"
 authors = [
@@ -35,7 +35,7 @@ classifiers = [
 # conda via environment.yml; only the lab core is declared here so
 # `pip install -e .` is fast and doesn't re-resolve it.
 dependencies = [
-  "troi-core @ git+https://github.com/thestochasticman/troi.git",
+  "troi-core @ git+https://github.com/thestochasticman/troi.git@gadi",
   "attrs",
   "typing_extensions",
   "numpy",

@@ -13,12 +13,20 @@ and new depth slices reuse everything already fetched. Part of the
 ## How it works
 
 ```
-{data_root}/slga_store/
-├── index.db      # SQLite: layer metadata + populated chunks
-└── slga.zarr/
-    ├── CLY_005_015   # one sparse national array per attribute × depth
-    └── SND_005_015 ...
+{tmp_dir}/slga_store/
+├── slga.zarr/
+│   ├── CLY_005_015/c/<cy>/<cx>   # one file per written 1200×1200-px chunk — the ledger
+│   └── SND_005_015/...
+├── layers/CLY_005_015.json        # the layer's COG url, transform, shape, nodata
+└── claims/                        # cross-node mutex dirs, present only during a fetch
 ```
+
+**The chunk file is the ledger.** Every write is one whole chunk and
+zarr 3 commits it by atomic rename, so a chunk either exists complete
+or not at all; there is no database. This branch (`gadi`) runs as many
+PBS jobs on many Gadi nodes against one store on Lustre, where file
+locks are node-local and SQLite is unsafe; see
+[troi/docs/ledger.md](https://github.com/thestochasticman/troi/blob/gadi/docs/ledger.md).
 
 - At a layer's first contact, its COG filename is resolved from the
   datastore listing (each attribute has its **own release date**, so
@@ -30,6 +38,13 @@ and new depth slices reuse everything already fetched. Part of the
   ledger and downloads **only the missing chunks**, each as one
   integer-aligned windowed read — no resampling, ever.
 - Soil properties are time-invariant: no time axis, no dates.
+- Nothing is ever resampled. `get_ds` returns native pixels with the
+  attrs `crs`, `transform` (six affine numbers of the returned window),
+  `nodata` and `native_res_m`, and raises if the requested layers are
+  not on one lattice. `store.gaps(bbox, attributes, depths)` lists every
+  chunk not on disk (`never_fetched` or `claimed_in_progress`) without
+  touching the network; a layer never contacted is one `never_fetched`
+  unit.
 - Pixel reads require a TERN API key (listings are public) — set
   `tern_api_key` in `~/.config/Troi.json`,
   `TROI_TERN_KEY`, or pass `api_key=` per call. Keys are free
@@ -88,7 +103,7 @@ network involved.
 ### pip
 
 ```bash
-pip install git+https://github.com/thestochasticman/pyslga.git
+pip install git+https://github.com/thestochasticman/pyslga.git@gadi
 ```
 
 Dependencies (the `troi` core included, pulled from GitHub) are
