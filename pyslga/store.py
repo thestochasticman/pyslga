@@ -176,6 +176,15 @@ class Store:
         return ((meta['x0'], meta['y_top'], meta['xres'], meta['yres']),
                 (meta['height'], meta['width']))
 
+    @staticmethod
+    def _same_lattice(a, b, tol_deg: float = 1e-6) -> bool:
+        """Do two ``(transform4, shape)`` describe one lattice? SLGA COGs
+        carry the same grid with ~1e-11 floating-point noise in their
+        geotransforms; ``tol_deg`` (~0.1 m) absorbs that and still rejects
+        a real shift or resolution change."""
+        (ta, sa), (tb, sb) = a, b
+        return sa == sb and all(abs(x - y) <= tol_deg for x, y in zip(ta, tb))
+
     # -- fill -------------------------------------------------------------
 
     def fill(s, bbox: list[float], attributes=DEFAULT_ATTRIBUTES,
@@ -285,7 +294,7 @@ class Store:
                 transform, shape = s._geo(meta)
                 if ref is None:
                     ref = (transform, shape)
-                elif (transform, shape) != ref:
+                elif not s._same_lattice((transform, shape), ref):
                     raise GridMismatch(
                         f'{meta["key"]} is on {transform} {shape}; the first requested '
                         f'layer is on {ref[0]} {ref[1]}. Request them separately.')
@@ -454,22 +463,37 @@ def test_layers_are_independent():
     return not r.complete and r.gaps[0].unit == (store.slga.layer_key('Silt', '5-15cm'),)
 
 
+def _prime_variant(store: Store, attribute: str, dx: float, value: float):
+    """A layer on a lattice shifted east by ``dx`` degrees."""
+    key = store.slga.layer_key(attribute, '5-15cm')
+    meta = dict(key=key, url='synthetic://', x0=_T[0] + dx, y_top=_T[1], xres=_T[2] + dx / 1e4,
+                yres=_T[3], height=_SHAPE[0], width=_SHAPE[1], nodata=None)
+    store._layers.write((key,), meta)
+    arr = store._array(meta)
+    for cy, cx in grid.chunks_in_window(grid.window_for_bbox(_TEST_BBOX, _T, _SHAPE)):
+        r0, r1, c0, c1 = grid.chunk_window(cy, cx, _SHAPE)
+        arr[r0:r1, c0:c1] = value
+
+
 def test_mismatched_layer_grids_raise():
     store = _tmp_store()
     _prime_layer(store, 'Clay', '5-15cm', _TEST_BBOX, 1.0)
-    key = store.slga.layer_key('Sand', '5-15cm')
-    other = dict(key=key, url='synthetic://', x0=_T[0] + 0.5 / 1200, y_top=_T[1], xres=_T[2],
-                 yres=_T[3], height=_SHAPE[0], width=_SHAPE[1], nodata=None)
-    store._layers.write((key,), other)
-    arr = store._array(other)
-    for cy, cx in grid.chunks_in_window(grid.window_for_bbox(_TEST_BBOX, _T, _SHAPE)):
-        r0, r1, c0, c1 = grid.chunk_window(cy, cx, _SHAPE)
-        arr[r0:r1, c0:c1] = 2.0
+    _prime_variant(store, 'Sand', 0.5 / 1200, 2.0)          # half a pixel east: a real shift
     try:
         store.get_ds(_TEST_BBOX, attributes=('Clay', 'Sand'))
     except GridMismatch:
         return True
     return False
+
+
+def test_float_noise_in_transforms_is_one_lattice():
+    """Real SLGA COGs differ by ~1e-11 degrees between layers; that is
+    the same lattice, not a mismatch."""
+    store = _tmp_store()
+    _prime_layer(store, 'Clay', '5-15cm', _TEST_BBOX, 1.0)
+    _prime_variant(store, 'Silt', 1e-10, 3.0)
+    ds = store.get_ds(_TEST_BBOX, attributes=('Clay', 'Silt'))
+    return float(ds['Clay_5-15cm'][0, 0]) == 1.0 and float(ds['Silt_5-15cm'][0, 0]) == 3.0
 
 
 def test_unknown_attribute_raises():
@@ -500,6 +524,7 @@ def test():
         test_two_processes_fill_the_same_chunks(),
         test_layers_are_independent(),
         test_mismatched_layer_grids_raise(),
+        test_float_noise_in_transforms_is_one_lattice(),
         test_unknown_attribute_raises(),
         test_missing_key_raises_before_network(),
     ])
